@@ -144,7 +144,7 @@ class FortyGuardClient:
                 # Base Phoenix summer distribution with expanded Psychrometric variables
                 if facility == "poultry_shed":
                     surf_temp = round(float(np.random.uniform(43.0, 49.5)), 2)
-                    air_temp = round(float(np.random.uniform(38.0, 42.0)), 2)
+                    air_temp = round(float(np.random.uniform(15.0, 18.0)), 2)
                     ambient_rh = round(float(np.random.uniform(15.0, 25.0)), 1)
                     
                     # Avian exhaust is highly saturated due to respiration and manure evaporation
