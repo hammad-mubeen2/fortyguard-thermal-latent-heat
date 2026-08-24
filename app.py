@@ -107,7 +107,7 @@ st.sidebar.info(
 # -----------------------------------------------------------------------------
 # 3. DATA PROCESSING PIPELINE
 # -----------------------------------------------------------------------------
-@st.cache_data(show_spinner=False)
+#@st.cache_data(show_spinner=False)
 def load_and_process_thermal_data(api_key: str, bbox_coords: dict, efficiency: float, albedo_delta: float):
     client = FortyGuardClient(api_key=api_key)
     raw_payload = client.fetch_temperature_grid(bbox=bbox_coords)

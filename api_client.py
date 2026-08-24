@@ -46,18 +46,20 @@ class FortyGuardClient:
             "x-api-key": self.api_key,
             "Content-Type": "application/json",
         }
-
     def fetch_temperature_grid(
         self,
         bbox: Optional[Dict[str, float]] = None,
         resolution: str = "2m",
-        metrics: str = "surface_temp,air_temp,humidity,elevation",  # Expanded Psychrometric Metrics
+        metrics: str = "surface_temp,air_temp,humidity,elevation",
     ) -> Dict[str, Any]:
-        """Fetch high-resolution thermal and psychrometric grid within a bounding box."""
+        """Fetch high-resolution thermal and psychrometric grid."""
         if bbox is None:
             bbox = self.PHOENIX_BBOX
 
-        bbox_str = f"{bbox['min_lon']},{bbox['min_lat']},{bbox['max_lon']},{bbox['max_lat']}"
+        bbox_str = (
+            f"{bbox['min_lon']},{bbox['min_lat']},"
+            f"{bbox['max_lon']},{bbox['max_lat']}"
+        )
         endpoint = f"{self.base_url}/temperature/grid"
         params = {
             "bbox": bbox_str,
@@ -65,19 +67,25 @@ class FortyGuardClient:
             "metrics": metrics,
         }
 
-        try:
-            response = requests.get(endpoint, headers=self.headers, params=params, timeout=15)
-            response.raise_for_status() 
-            
-            logging.info("Successfully retrieved live multi-dimensional FortyGuard data.")
-            return response.json()
-            
-        except (requests.RequestException, requests.exceptions.JSONDecodeError) as e:
-            logging.warning(
-                f"API Interface Error: {e}. "
-                "Executing fallback to high-fidelity psychrometric synthetic matrix."
+        response = requests.get(
+            endpoint,
+            headers=self.headers,
+            params=params,
+            timeout=15,
+        )
+
+        if response.status_code != 200:
+            raise RuntimeError(
+                f"FORTYGUARD API ERROR [{response.status_code}]: {response.text}"
             )
-            return self._generate_phoenix_synthetic_grid(bbox)
+
+        payload = response.json()
+        if not payload:
+            raise RuntimeError(
+                "FORTYGUARD API ERROR: Server returned a blank payload."
+            )
+
+        return payload
 
     def to_geodataframe(self, raw_geojson: Dict[str, Any]) -> gpd.GeoDataFrame:
         """
